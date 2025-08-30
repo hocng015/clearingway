@@ -502,6 +502,9 @@ guilds:
       title: Fruitful Server Roles
       description: Toggle server-related notification roles.
       multiSelect: true
+      requiredRoles:
+      - "Genesis"
+      - "Oracle"
       roles:
         - name: Server Ping
           color: 0x32cd32
