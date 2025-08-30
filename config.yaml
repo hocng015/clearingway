@@ -256,6 +256,363 @@ guilds:
     color: 0x0ec0a5
   - from: "The Sexa Legend"
     color: 0x0ec0a5
+- name: Fruitful
+  roles:
+    relevantParsing: false
+    relevantFlexing: true
+    relevantRepetition: true
+    legend: true
+    ultimateFlexing: false
+    ultimateRepetition: false
+    datacenter: true
+    reclear: true
+    nameColor: true
+    menu: true
+  guildId: 1369354139313770676
+  channelId: 1411452108322115594
+  encounters:
+  - ids: [1079]
+    name: "Futures Rewritten (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 21
+    the: "Fruity"
+    difficulty: "Ultimate"
+    roles:
+      - name: "FRU Cleared"
+        type: "Cleared"
+        color: 0xa3f8e7
+      - name: "FRU Reclear"
+        type: "Reclear"
+      - name: "The Fruity Color"
+        type: "Name Color"
+        color: 0xa3f8e7
+      - name: "FRU C4X"
+        type: "C4X"
+      - name: "FRU Prog"
+        type: "Prog"
+  - ids: [1068, 1077]
+    name: "The Omega Protocol (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 21
+    the: "Citrus"
+    difficulty: "Ultimate"
+    roles:
+      - name: "TOP Cleared"
+        type: "Cleared"
+        color: 0xff8c00
+      - name: "TOP Reclear"
+        type: "Reclear"
+      - name: "The Citrus Color"
+        type: "Name Color"
+        color: 0xff8c00
+      - name: "TOP C4X"
+        type: "C4X"
+      - name: "TOP Prog"
+        type: "Prog"
+  - ids: [1065, 1076]
+    name: "Dragonsong's Reprise (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 19
+    the: "Berry"
+    difficulty: "Ultimate"
+    roles:
+      - name: "DSR Cleared"
+        type: "Cleared"
+        color: 0x8b0000
+      - name: "DSR Reclear"
+        type: "Reclear"
+      - name: "The Berry Color"
+        type: "Name Color"
+        color: 0x8b0000
+      - name: "DSR C4X"
+        type: "C4X"
+      - name: "DSR Prog"
+        type: "Prog"
+  - ids: [1062, 1050, 1075]
+    name: "The Epic of Alexander (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 17
+    the: "Golden Apple"
+    difficulty: "Ultimate"
+    roles:
+      - name: "TEA Cleared"
+        type: "Cleared"
+        color: 0xffd700
+      - name: "TEA Reclear"
+        type: "Reclear"
+      - name: "The Golden Apple Color"
+        type: "Name Color"
+        color: 0xffd700
+      - name: "TEA C4X"
+        type: "C4X"
+      - name: "TEA Prog"
+        type: "Prog"
+  - ids: [1061, 1048, 1042, 1074]
+    name: "The Weapon's Refrain (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 15
+    the: "Tropical"
+    difficulty: "Ultimate"
+    roles:
+      - name: "UWU Cleared"
+        type: "Cleared"
+        color: 0x00ced1
+      - name: "UWU Reclear"
+        type: "Reclear"
+      - name: "The Tropical Color"
+        type: "Name Color"
+        color: 0x00ced1
+      - name: "UWU C4X"
+        type: "C4X"
+      - name: "UWU Prog"
+        type: "Prog"
+  - ids: [1060, 1047, 1039, 1073]
+    name: "The Unending Coil of Bahamut (Ultimate)"
+    defaultRoles: false
+    totalWeaponsAvailable: 15
+    the: "Legendary Fruit"
+    difficulty: "Ultimate"
+    roles:
+      - name: "UCoB Cleared"
+        type: "Cleared"
+        color: 0x9370db
+      - name: "UCoB Reclear"
+        type: "Reclear"
+      - name: "The Legendary Fruit Color"
+        type: "Name Color"
+        color: 0x9370db
+      - name: "UCoB C4X"
+        type: "C4X"
+      - name: "UCoB Prog"
+        type: "Prog"
+  reconfigureRoles:
+  - from: "Please Do Other Content"
+    hoist: true
+  # Skip limbo roles for cleaner role management
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "The Unending Coil of Bahamut (Ultimate)"
+    skip: true
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "The Weapon's Refrain (Ultimate)"
+    skip: true
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "The Epic of Alexander (Ultimate)"
+    skip: true
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "Dragonsong's Reprise (Ultimate)"
+    skip: true
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "The Omega Protocol (Ultimate)"
+    skip: true
+  - from: "Limbo"
+    type: "Limbo"
+    encounterName: "Futures Rewritten (Ultimate)"
+    skip: true
+  - from: "NA's Comfiest"
+    skip: true
+  - from: "The Comfy Legend"
+    skip: true
+  # Rename ultimate Complete roles to fruit themes
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "The Unending Coil of Bahamut (Ultimate)"
+    to: "Legendary Fruit"
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "The Weapon's Refrain (Ultimate)"
+    to: "Tropical"
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "The Epic of Alexander (Ultimate)"
+    to: "Golden Apple"
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "Dragonsong's Reprise (Ultimate)"
+    to: "Berry"
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "The Omega Protocol (Ultimate)"
+    to: "Citrus"
+  - from: "Complete"
+    type: "Complete"
+    encounterName: "Futures Rewritten (Ultimate)"
+    to: "Fruity"
+  # Explicit ultimate legend counts with fruit themes
+  - from: "The Legend"
+    to: "Fresh Fruit (1 Ultimate)"
+    color: 0x32cd32
+  - from: "The Double Legend"
+    to: "Fruit Basket (2 Ultimates)"
+    color: 0xff4500
+  - from: "The Triple Legend"
+    to: "Fruit Salad (3 Ultimates)"
+    color: 0xff1493
+  - from: "The Quad Legend"
+    to: "Fruit Smoothie (4 Ultimates)"
+    color: 0x9932cc
+  - from: "The Penta Legend"
+    to: "Fruit Parfait (5 Ultimates)"
+    color: 0xffd700
+  - from: "The Sexa Legend"
+    to: "Orchard Owner (6 Ultimates)"
+    color: 0x00ff7f
+  menuOrder:
+    - name: "roleAssignment"
+      menus:
+        - menuMain
+        - cleared
+        - prog
+  menu:
+    - name: menuMain
+      type: menuMain
+      title: __Fruitful Main Menu__
+      description: |
+        Welcome to the Fruitful garden! Use the buttons below to verify your character, obtain server roles, or remove roles.
+      thumbnailUrl: >-
+        https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f347.png
+      fields:
+        - name: Verify Button
+          value: >
+            Verifying your character will confirm ownership of your FFXIV character and analyze your FFLogs.
+            Fresh roles will be assigned based on your confirmed clears and ultimate achievements.
+        - name: Server Roles Button
+          value: Use this button to add or remove roles for server notifications and pings.
+        - name: Remove Roles Button
+          value: Use this button to remove certain types of roles in bulk.
+      buttons:
+        - label: Verify
+          style: 3
+          menuName: menuVerify
+          menuType: menuVerify
+        - label: Server Roles
+          style: 1
+          menuName: menuServer
+          menuType: menuEncounter
+        - label: Remove Roles
+          style: 4
+          menuName: menuRemove
+          menuType: menuRemove
+    - name: menuServer
+      type: menuEncounter
+      title: Fruitful Server Roles
+      description: Toggle server-related notification roles.
+      multiSelect: true
+      roles:
+        - name: Server Ping
+          color: 0x32cd32
+        - name: Vote Ping
+          color: 0x32cd32
+        - name: Event Ping
+          color: 0x32cd32
+    - name: cleared
+      type: menuMain
+      title: __Cleared Roles Menu__
+      description: Roles for those who have ripened their skills with clears.
+      thumbnailUrl: >-
+        https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f34e.png
+      fields:
+        - name: Name Color Button
+          value: >
+            Add or remove name colors that match the theme of specific ultimate encounters.
+        - name: Reclear Roles Button
+          value: >
+            Add or remove mentionable reclear roles for duties you've already cleared.
+        - name: C4X Roles Button
+          value: >
+            Add or remove mentionable C4X (clear for one) helper roles.
+      buttons:
+        - label: Name Colors
+          style: 1
+          menuName: menuColor
+          menuType: menuEncounter
+        - label: Reclear Roles
+          style: 1
+          menuName: menuReclear
+          menuType: menuEncounter
+        - label: C4X Roles
+          style: 1
+          menuName: menuHelper
+          menuType: menuEncounter
+    - name: menuColor
+      type: menuEncounter
+      title: Fruit-Themed Name Colors
+      description: >
+        Toggle name colors that match ultimate encounter themes. 
+        Requires corresponding clear roles.
+      roleType:
+        - Name Color
+      requireClear: true
+      difficulties:
+        - Ultimate
+    - name: menuReclear
+      type: menuEncounter
+      title: Reclear Roles
+      description: >
+        Toggle mentionable reclear roles. Requires corresponding clear roles.
+      roleType:
+        - Reclear
+      multiSelect: true
+      requireClear: true
+      difficulties:
+        - Ultimate
+    - name: menuHelper
+      type: menuEncounter
+      title: C4X Helper Roles
+      description: >
+        Toggle mentionable C4X roles for helping others clear. 
+        Requires corresponding clear roles.
+      roleType:
+        - C4X
+      multiSelect: true
+      requireClear: true
+      difficulties:
+        - Ultimate
+    - name: prog
+      type: menuMain
+      title: __Prog Roles Menu__
+      description: >
+        Prog roles for those growing their skills. Available to everyone!
+      thumbnailUrl: >-
+        https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f331.png
+      fields:
+        - name: Ultimate Prog Button
+          value: >
+            Roles to be pinged for ultimate progression parties.
+        - name: Other Roles Button
+          value: >
+            Other helpful roles including BiS farming and mercenary services.
+      buttons:
+        - label: Ultimate Prog
+          style: 1
+          menuName: ultimateProg
+          menuType: menuEncounter
+        - label: Other Roles
+          style: 1
+          menuName: othersProg
+          menuType: menuEncounter
+    - name: ultimateProg
+      type: menuEncounter
+      title: Ultimate Prog Roles
+      description: Toggle mentionable roles for ultimate progression.
+      roleType:
+        - Prog
+      multiSelect: true
+      difficulties:
+        - Ultimate
+    - name: othersProg
+      type: menuEncounter
+      title: Other Helpful Roles
+      description: Toggle other mentionable support roles.
+      multiSelect: true
+      roles:
+        - name: BiS Farm
+        - name: Ultimate Unlock
+        - name: Mercenary
 - name: NAUR
   roles:
     relevantFlexing: true
