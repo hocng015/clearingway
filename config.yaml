@@ -1192,6 +1192,38 @@ guilds:
             Once verified, roles will then be assigned to you based on your confirmed clears.
       buttons:
         - label: Verify Clears
+fru:
+  zone_id: 68  # FRU Zone ID in FFLogs (actual ID TBD)
+  encounters:
+    - id: 1001
+      name: "FRU-P1"
+      progression_threshold: 80.0  # %HP remaining to consider "reached P2"
+    - id: 1002  
+      name: "FRU-P2"
+      progression_threshold: 60.0
+    - id: 1003
+      name: "FRU-P3" 
+      progression_threshold: 40.0
+    - id: 1004
+      name: "FRU-P4"
+      progression_threshold: 20.0
+    - id: 1005
+      name: "FRU-P5"
+      progression_threshold: 0.0   # Full clear
+  
+  progression_roles:
+    - role: "FRU P1 Prog"
+      threshold: 100.0  # Still learning P1
+    - role: "FRU P2 Prog" 
+      threshold: 80.0   # Reached P2
+    - role: "FRU P3 Prog"
+      threshold: 60.0   # Reached P3
+    - role: "FRU P4 Prog"
+      threshold: 40.0   # Reached P4
+    - role: "FRU P5 Prog"
+      threshold: 20.0   # Reached final phase
+    - role: "Genesis of Legends"  # Full clear title
+      threshold: 0.0    # Successfully cleared
           style: 3
           menuName: menuVerify
           menuType: menuVerify
