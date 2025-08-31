@@ -288,20 +288,16 @@ guilds:
         color: 0xa3f8e7
       - name: "FRU C4X"
         type: "C4X"
+    prog:  # This is the missing piece!
       - name: "FRU P1 Prog (Fatebreaker)"
-        type: "Prog"
         color: 0xff6b6b
       - name: "FRU P2 Prog (Usurper)"
-        type: "Prog"
         color: 0x4ecdc4
       - name: "FRU P3 Prog (Oracle)"
-        type: "Prog"
         color: 0x45b7d1
       - name: "FRU P4 Prog (Gaia)"
-        type: "Prog"
         color: 0x96ceb4
       - name: "FRU P5 Prog (Enrage)"
-        type: "Prog"
         color: 0xfeca57
   - ids: [1068, 1077]
     name: "The Omega Protocol (Ultimate)"
