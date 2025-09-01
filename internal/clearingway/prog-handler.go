@@ -215,9 +215,21 @@ func (c *Clearingway) UpdateProgForCharacterInGuild(
 
 	fmt.Printf("Found the following relevant fights for %s (%s)...\n", char.Name(), char.World)
 	for _, e := range guild.Encounters.Encounters {
-		for _, r := range e.Fights(fights) {
-			fmt.Printf("  %+v\n", r)
-		}
+	    fmt.Printf("Processing encounter: %s\n", e.Name)
+	    
+	    // Add this logging:
+	    if e.ProgRoles != nil {
+	        fmt.Printf("  Encounter has ProgRoles initialized with %d roles\n", len(e.ProgRoles.Roles))
+	        for i, role := range e.ProgRoles.Roles {
+	            fmt.Printf("    Prog role [%d]: %s\n", i, role.Name)
+	        }
+	    } else {
+	        fmt.Printf("  Encounter has NO ProgRoles initialized\n")
+	    }
+	    
+	    for _, r := range e.Fights(fights) {
+	        fmt.Printf("  %+v\n", r)
+	    }
 	}
 
 	member, err := c.Discord.Session.GuildMember(guild.Id, discordUserId)
