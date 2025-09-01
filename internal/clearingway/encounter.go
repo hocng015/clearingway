@@ -194,6 +194,26 @@ func (e *Encounter) Init(c *ConfigEncounter) {
 	if c.ConfigProg != nil {
 		e.ProgRoles = ProgRoles(c.ConfigProg, e)
 	}
+
+    // Add this logging at the end of the Init method:
+    fmt.Printf("Initializing encounter: %s\n", e.Name)
+    fmt.Printf("  ConfigProg is nil: %v\n", c.ConfigProg == nil)
+    
+    if c.ConfigProg != nil {
+        fmt.Printf("  Found %d prog roles in config\n", len(c.ConfigProg))
+        for i, progRole := range c.ConfigProg {
+            fmt.Printf("    Config prog role [%d]: %s (color: %d)\n", i, progRole.Name, progRole.Color)
+        }
+        
+        e.ProgRoles = ProgRoles(c.ConfigProg, e)
+        
+        fmt.Printf("  ProgRoles initialized with %d roles\n", len(e.ProgRoles.Roles))
+        for i, role := range e.ProgRoles.Roles {
+            fmt.Printf("    Initialized prog role [%d]: %s\n", i, role.Name)
+        }
+    } else {
+        fmt.Printf("  No prog configuration found - ProgRoles will be nil\n")
+    }
 }
 
 func (e *Encounter) DifficultyInt() int {
