@@ -291,13 +291,13 @@ guilds:
     prog:  # This is the missing piece!
       - name: "FRU P1 Prog (Fatebreaker)"
         color: 0xff6b6b
-      - name: "FRU P2 Prog (Usurper)"
+      - name: "FRU P2 Prog (Usurper of Frost)"
         color: 0x4ecdc4
-      - name: "FRU P3 Prog (Oracle)"
+      - name: "FRU P3 Prog (Oracle of Darkness)"
         color: 0x45b7d1
-      - name: "FRU P4 Prog (Gaia)"
+      - name: "FRU P4 Prog (Shiva + Gaia)"
         color: 0x96ceb4
-      - name: "FRU P5 Prog (Enrage)"
+      - name: "FRU P5 Prog (Pandora)"
         color: 0xfeca57
   - ids: [1068, 1077]
     name: "The Omega Protocol (Ultimate)"
