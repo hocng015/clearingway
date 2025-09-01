@@ -18,9 +18,13 @@ func ProgRoles(rs []*ConfigRole, e *Encounter) *Roles {
 	}
 
 	roles.ShouldApply = func(opts *ShouldApplyOpts) (bool, string, []*Role, []*Role) {
-		if opts.Fights == nil || len(opts.Fights.Fights) == 0 {
-			return false, "No valid fights found in provided report!", nil, nil
-		}
+	    fmt.Printf("ProgRoles ShouldApply called with %d existing roles\n", len(opts.ExistingRoles.Roles))
+	    fmt.Printf("Available prog roles: %d\n", len(roles.Roles))
+	    
+	    if opts.Fights == nil || len(opts.Fights.Fights) == 0 {
+	        fmt.Printf("No fights provided to ShouldApply\n")
+	        return false, "No valid fights found in provided report!", nil, nil
+	    }
 
 		// Determine if any existing prog role exists
 		var existingProgRole *Role
