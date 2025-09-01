@@ -286,12 +286,16 @@ func (c *Clearingway) UpdateProgForCharacterInGuild(
 }
 
 func CleanReportId(reportId string) string {
-	reportId = strings.TrimRight(reportId, "/")
-	reportIds := strings.Split(reportId, "#")
-	reportId = reportIds[0]
-	reportIds = strings.Split(reportId, "/")
-	reportId = reportIds[len(reportIds)-1]
-	reportIds = strings.Split(reportId, "#")
-	reportId = reportIds[0]
-	return reportId
+    reportId = strings.TrimRight(reportId, "/")
+    
+    parts := strings.Split(reportId, "#")
+    reportId = parts[0]
+    
+    parts = strings.Split(reportId, "?")
+    reportId = parts[0]
+    
+    parts = strings.Split(reportId, "/")
+    reportId = parts[len(parts)-1]
+    
+    return reportId
 }
