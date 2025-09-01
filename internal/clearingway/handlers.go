@@ -309,6 +309,8 @@ func (c *Clearingway) InteractionCreate(s *discordgo.Session, i *discordgo.Inter
 		switch i.ApplicationCommandData().Name {
 		case "clears":
 			c.Autocomplete(s, i)
+		case "prog":
+        	c.Autocomplete(s, i)
 		case "menu":
 			c.MenuAutocomplete(s, i)
 		}
