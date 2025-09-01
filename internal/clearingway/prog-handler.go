@@ -250,10 +250,15 @@ func (c *Clearingway) UpdateProgForCharacterInGuild(
 	text := []string{}
 
 	shouldApplyOpts := &ShouldApplyOpts{
-		Character:     char,
-		Fights:        fights,
-		ExistingRoles: existingRoles,
-		Encounters:    guild.Encounters,
+	    Character:     char,
+	    Fights:        fights,  // Make sure this is the fights from GetProgForReport
+	    ExistingRoles: existingRoles,
+	    Encounters:    guild.Encounters,
+	}
+	
+	fmt.Printf("About to call ShouldApply with %d fights\n", len(fights.Fights))
+	if len(fights.Fights) > 0 {
+	    fmt.Printf("First fight: %+v\n", fights.Fights[0])
 	}
 
 	for _, encounter := range guild.Encounters.Encounters {
