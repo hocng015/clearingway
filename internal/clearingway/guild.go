@@ -34,6 +34,12 @@ type Guild struct {
 	MenuEnabled               bool
 	SkipRemoval               bool
 
+	// ADD THESE NEW FIELDS FOR LEADERBOARD
+	LeaderboardChannelId  string
+	LeaderboardEnabled    bool
+	KillCountLeaderboards map[string]*KillCountLeaderboard
+	LeaderboardMessageIds map[string]string
+
 	EncounterRoles          *Roles
 	RelevantParsingRoles    *Roles
 	RelevantFlexingRoles    *Roles
@@ -55,6 +61,12 @@ func (g *Guild) Init(c *ConfigGuild) {
 	g.Characters = &ffxiv.Characters{Characters: map[string]*ffxiv.Character{}}
 	g.Menus = &Menus{Menus: map[string]*Menu{}, MenuGroups: map[string][]string{}}
 	g.DefaultMenus()
+
+	// ADD THESE NEW INITIALIZATIONS FOR LEADERBOARD
+	g.LeaderboardChannelId = c.LeaderboardChannelId
+	g.LeaderboardEnabled = c.LeaderboardEnabled
+	g.KillCountLeaderboards = make(map[string]*KillCountLeaderboard)
+	g.LeaderboardMessageIds = make(map[string]string)
 
 	g.PhysicalDatacenters = &PhysicalDatacenters{PhysicalDatacenters: map[string]*PhysicalDatacenter{}}
 	fmt.Printf("Datacenters are %+v\n", c.ConfigPhysicalDatacenters)
@@ -139,6 +151,13 @@ func (g *Guild) Init(c *ConfigGuild) {
 			g.MenuEnabled = false
 		}
 
+		// ADD THIS FOR LEADERBOARD
+		if c.ConfigRoles.Leaderboard {
+			g.LeaderboardEnabled = true
+		} else {
+			g.LeaderboardEnabled = false
+		}
+
 		if c.ConfigRoles.SkipRemoval {
 			g.SkipRemoval = true
 		} else {
@@ -178,12 +197,12 @@ func (g *Guild) Init(c *ConfigGuild) {
 	}
 
 	if g.MenuEnabled {
-		if (c.ConfigMenuOrder != nil) {
+		if c.ConfigMenuOrder != nil {
 			for _, menuOrder := range c.ConfigMenuOrder {
 				g.Menus.MenuGroups[menuOrder.Name] = menuOrder.Menus
 			}
 		}
-		
+
 		g.InitDiscordMenu()
 		g.MenuRoles = g.Menus.Roles()
 	}
@@ -314,7 +333,7 @@ func (g *Guild) InitDiscordMenu() {
 	for group, _ := range g.Menus.MenuGroups {
 		menuGroupName := "group " + group
 		g.Menus.Autocomplete = append(g.Menus.Autocomplete, &discordgo.ApplicationCommandOptionChoice{
-			Name: menuGroupName,
+			Name:  menuGroupName,
 			Value: menuGroupName,
 		})
 		g.Menus.AutoCompleteTrie.Insert(menuGroupName)

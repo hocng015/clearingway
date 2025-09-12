@@ -86,6 +86,11 @@ func (c *Clearingway) DiscordReady(s *discordgo.Session, event *discordgo.Ready)
 			commandList = append(commandList, MenuCommand)
 		}
 
+		// ADD THIS FOR LEADERBOARD
+		if guild.LeaderboardEnabled {
+			commandList = append(commandList, CountCommand)
+		}
+
 		addedCommands, err := s.ApplicationCommandBulkOverwrite(event.User.ID, discordGuild.ID, commandList)
 		fmt.Printf("List of successfully created commands:\n")
 		for _, command := range addedCommands {
@@ -130,6 +135,65 @@ var ClearCommand = &discordgo.ApplicationCommand{
 	Name:        "clears",
 	Description: "Verify you own your character and assign them cleared roles.",
 	Options: []*discordgo.ApplicationCommandOption{
+		{
+			Type:         discordgo.ApplicationCommandOptionString,
+			Name:         "world",
+			Description:  "Your character's world",
+			Required:     true,
+			Autocomplete: true,
+		},
+		{
+			Type:        discordgo.ApplicationCommandOptionString,
+			Name:        "first-name",
+			Description: "Your character's first name",
+			Required:    true,
+		},
+		{
+			Type:        discordgo.ApplicationCommandOptionString,
+			Name:        "last-name",
+			Description: "Your character's last name",
+			Required:    true,
+		},
+	},
+}
+
+// ADD THIS NEW COMMAND
+var CountCommand = &discordgo.ApplicationCommand{
+	Name:        "count",
+	Description: "Record your kill count for an ultimate and update the leaderboard.",
+	Options: []*discordgo.ApplicationCommandOption{
+		{
+			Type:        discordgo.ApplicationCommandOptionString,
+			Name:        "ultimate",
+			Description: "The ultimate to record kills for",
+			Required:    true,
+			Choices: []*discordgo.ApplicationCommandOptionChoice{
+				{
+					Name:  "UCoB",
+					Value: "The Unending Coil of Bahamut (Ultimate)",
+				},
+				{
+					Name:  "UWU",
+					Value: "The Weapon's Refrain (Ultimate)",
+				},
+				{
+					Name:  "TEA",
+					Value: "The Epic of Alexander (Ultimate)",
+				},
+				{
+					Name:  "DSR",
+					Value: "Dragonsong's Reprise (Ultimate)",
+				},
+				{
+					Name:  "TOP",
+					Value: "The Omega Protocol (Ultimate)",
+				},
+				{
+					Name:  "FRU",
+					Value: "Futures Rewritten (Ultimate)",
+				},
+			},
+		},
 		{
 			Type:         discordgo.ApplicationCommandOptionString,
 			Name:         "world",
@@ -304,15 +368,19 @@ func (c *Clearingway) InteractionCreate(s *discordgo.Session, i *discordgo.Inter
 			c.ToggleReclear(s, i)
 		case "menu":
 			c.MenuMainSend(s, i)
+		case "count": // ADD THIS
+			c.Count(s, i)
 		}
 	case discordgo.InteractionApplicationCommandAutocomplete:
 		switch i.ApplicationCommandData().Name {
 		case "clears":
 			c.Autocomplete(s, i)
 		case "prog":
-        	c.Autocomplete(s, i)
+			c.Autocomplete(s, i)
 		case "menu":
 			c.MenuAutocomplete(s, i)
+		case "count": // ADD THIS
+			c.Autocomplete(s, i)
 		}
 	case discordgo.InteractionMessageComponent:
 		customID := i.MessageComponentData().CustomID
@@ -358,7 +426,7 @@ func (c *Clearingway) InteractionCreate(s *discordgo.Session, i *discordgo.Inter
 				c.MenuEncounterProcess(s, i, command[2], command[3])
 			default:
 				fmt.Printf("Invalid custom ID received: \"%v\"\n", customID)
-			}	
+			}
 		default:
 			fmt.Printf("Invalid custom ID received: \"%v\"\n", customID)
 		}

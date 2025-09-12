@@ -268,8 +268,11 @@ guilds:
     reclear: true
     nameColor: true
     menu: true
+    leaderboard: true  # ADD THIS
   guildId: 1369354139313770676
   channelId: 1411452108322115594
+  leaderboardChannelId: 1416035349481783297  # ADD THIS - change to your desired channel
+  leaderboardEnabled: true  # ADD THIS
   encounters:
   - ids: [1079]
     name: "Futures Rewritten (Ultimate)"

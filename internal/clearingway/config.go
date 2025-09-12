@@ -8,6 +8,8 @@ type ConfigGuild struct {
 	Name                      string                      `yaml:"name"`
 	GuildId                   string                      `yaml:"guildId"`
 	ChannelId                 string                      `yaml:"channelId"`
+	LeaderboardChannelId      string                      `yaml:"leaderboardChannelId"` // ADD THIS
+	LeaderboardEnabled        bool                        `yaml:"leaderboardEnabled"`   // ADD THIS
 	ConfigPhysicalDatacenters []*ConfigPhysicalDatacenter `yaml:"physicalDatacenters"`
 	ConfigEncounters          []*ConfigEncounter          `yaml:"encounters"`
 	ConfigAchievements        []*ConfigAchievement        `yaml:"achievements"`
@@ -29,6 +31,7 @@ type ConfigRoles struct {
 	NameColor          bool `yaml:"nameColor"`
 	Reclear            bool `yaml:"reclear"`
 	Menu               bool `yaml:"menu"`
+	Leaderboard        bool `yaml:"leaderboard"` // ADD THIS
 }
 
 type ConfigEncounter struct {
