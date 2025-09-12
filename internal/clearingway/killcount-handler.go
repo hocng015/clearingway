@@ -39,32 +39,23 @@ func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate
 		return
 	}
 
-	// Ignore messages not on the correct channel
-	if i.ChannelID != g.ChannelId {
-		fmt.Printf("Ignoring message not in channel %s.\n", g.ChannelId)
+	// Defer the interaction immediately to avoid timeout
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags: discordgo.MessageFlagsEphemeral,
+		},
+	})
+	if err != nil {
+		fmt.Printf("Error deferring interaction: %v\n", err)
 		return
 	}
 
-	// Check if using the correct channel
-	if i.ChannelID != g.ChannelId {
-		fmt.Printf("Ignoring message not in channel %s.\n", g.ChannelId)
-		err := discord.StartInteraction(s, i.Interaction,
-			fmt.Sprintf("Please use this command in <#%s>", g.ChannelId))
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
-		return
-	}
+	// Retrieve all the options sent to the command
 	options := i.ApplicationCommandData().Options
 	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 	for _, opt := range options {
 		optionMap[opt.Name] = opt
-	}
-
-	err := discord.StartInteraction(s, i.Interaction, "Processing kill count request...")
-	if err != nil {
-		fmt.Printf("Error sending Discord message: %v\n", err)
-		return
 	}
 
 	var world string
@@ -89,7 +80,7 @@ func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate
 }
 
 func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.InteractionCreate, g *Guild, world string, firstName string, lastName string, ultimate string) {
-	// Use FollowupMessageCreate for all messages since we deferred
+	// Use FollowupMessageCreate for the first message since we deferred
 	if len(world) == 0 || len(firstName) == 0 || len(lastName) == 0 || len(ultimate) == 0 {
 		_, err := s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
 			Content: "`/count` command failed! Please input your world, first name, last name, and ultimate.",
@@ -107,12 +98,9 @@ func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.Interaction
 	lastName = title.String(lastName)
 
 	if !ffxiv.IsWorld(world) {
-		err := discord.ContinueInteraction(s, i.Interaction,
+		discord.ContinueInteraction(s, i.Interaction,
 			fmt.Sprintf("`%s` is not a valid world! Make sure you spelled your world name properly.", world),
 		)
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
 		return
 	}
 
@@ -126,22 +114,15 @@ func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.Interaction
 	}
 
 	if targetEncounter == nil {
-		err := discord.ContinueInteraction(s, i.Interaction,
+		discord.ContinueInteraction(s, i.Interaction,
 			fmt.Sprintf("`%s` is not a valid ultimate!", ultimate),
 		)
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
 		return
 	}
 
-	err := discord.ContinueInteraction(s, i.Interaction,
+	discord.ContinueInteraction(s, i.Interaction,
 		fmt.Sprintf("Finding `%s %s (%s)` in the Lodestone...", firstName, lastName, world),
 	)
-	if err != nil {
-		fmt.Printf("Error sending Discord message: %v\n", err)
-		return
-	}
 
 	char, err := g.Characters.Init(world, firstName, lastName)
 	if err != nil {
