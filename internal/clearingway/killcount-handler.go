@@ -141,56 +141,41 @@ func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.Interaction
 
 	char, err := g.Characters.Init(world, firstName, lastName)
 	if err != nil {
-		err := discord.ContinueInteraction(s, i.Interaction, err.Error())
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
+		discord.ContinueInteraction(s, i.Interaction, err.Error())
 		return
 	}
 
 	err = c.Fflogs.SetCharacterLodestoneID(char)
 	if err != nil {
-		err := discord.ContinueInteraction(s, i.Interaction,
+		discord.ContinueInteraction(s, i.Interaction,
 			fmt.Sprintf(
 				"Error finding this character's Lodestone ID from FF Logs: %v\nTo make lookups faster in the future, please link your character in FF Logs to the Lodestone here: https://www.fflogs.com/lodestone/import",
 				err,
 			))
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-			return
-		}
+
 		err = lodestone.SetCharacterLodestoneID(char)
 		if err != nil {
-			err := discord.ContinueInteraction(s, i.Interaction,
+			discord.ContinueInteraction(s, i.Interaction,
 				fmt.Sprintf(
 					"Error finding this character's Lodestone ID in the Lodestone: %v\nIf your character name is short or very common this can frequently fail. Please link your character in FF Logs to the Lodestone here: https://www.fflogs.com/lodestone/import",
 					err,
 				))
-			if err != nil {
-				fmt.Printf("Error sending Discord message: %v\n", err)
-				return
-			}
+			return
 		}
 	}
 
-	err = discord.ContinueInteraction(s, i.Interaction,
+	discord.ContinueInteraction(s, i.Interaction,
 		fmt.Sprintf("Verifying ownership of `%s (%s)`...", char.Name(), char.World),
 	)
-	if err != nil {
-		fmt.Printf("Error sending Discord message: %v\n", err)
-	}
 
 	discordId := i.Member.User.ID
 	isOwner, err := lodestone.CharacterIsOwnedByDiscordUser(char, discordId)
 	if err != nil {
-		err = discord.ContinueInteraction(s, i.Interaction, err.Error())
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
+		discord.ContinueInteraction(s, i.Interaction, err.Error())
 		return
 	}
 	if !isOwner {
-		err = discord.ContinueInteraction(s, i.Interaction,
+		discord.ContinueInteraction(s, i.Interaction,
 			fmt.Sprintf(
 				"I could not verify your ownership of `%s (%s)`!\nIf this is your character, add the following code to your Lodestone profile and try again:\n\n**%s**\n\nYou can edit your Lodestone profile at https://na.finalfantasyxiv.com/lodestone/my/setting/profile/",
 				char.Name(),
@@ -198,28 +183,19 @@ func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.Interaction
 				char.LodestoneSlug(discordId),
 			),
 		)
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
 		return
 	}
 
-	err = discord.ContinueInteraction(s, i.Interaction,
+	discord.ContinueInteraction(s, i.Interaction,
 		fmt.Sprintf("Retrieving kill count for `%s (%s)` in %s...", char.Name(), char.World, ultimate),
 	)
-	if err != nil {
-		fmt.Printf("Error sending Discord message: %v\n", err)
-	}
 
 	// Get the kill count for this specific ultimate
 	killCount, err := c.GetKillCountForUltimate(char, targetEncounter)
 	if err != nil {
-		err = discord.ContinueInteraction(s, i.Interaction,
+		discord.ContinueInteraction(s, i.Interaction,
 			fmt.Sprintf("Could not retrieve kill count: %s", err),
 		)
-		if err != nil {
-			fmt.Printf("Error sending Discord message: %v\n", err)
-		}
 		return
 	}
 
@@ -229,13 +205,10 @@ func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.Interaction
 		fmt.Printf("Error updating leaderboard: %v\n", err)
 	}
 
-	err = discord.ContinueInteraction(s, i.Interaction,
+	discord.ContinueInteraction(s, i.Interaction,
 		fmt.Sprintf("✅ **Kill count recorded!**\n\n`%s (%s)` has **%d kills** in %s.\n\nThe leaderboard has been updated!",
 			char.Name(), char.World, killCount, ultimate),
 	)
-	if err != nil {
-		fmt.Printf("Error sending Discord message: %v\n", err)
-	}
 }
 
 func (c *Clearingway) GetKillCountForUltimate(char *ffxiv.Character, encounter *Encounter) (int, error) {
