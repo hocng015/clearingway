@@ -89,8 +89,12 @@ func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate
 }
 
 func (c *Clearingway) CountHelper(s *discordgo.Session, i *discordgo.InteractionCreate, g *Guild, world string, firstName string, lastName string, ultimate string) {
+	// Use FollowupMessageCreate for all messages since we deferred
 	if len(world) == 0 || len(firstName) == 0 || len(lastName) == 0 || len(ultimate) == 0 {
-		err := discord.ContinueInteraction(s, i.Interaction, "`/count` command failed! Please input your world, first name, last name, and ultimate.")
+		_, err := s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
+			Content: "`/count` command failed! Please input your world, first name, last name, and ultimate.",
+			Flags:   discordgo.MessageFlagsEphemeral,
+		})
 		if err != nil {
 			fmt.Printf("Error sending Discord message: %v\n", err)
 		}
