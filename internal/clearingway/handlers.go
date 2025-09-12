@@ -982,16 +982,25 @@ func (c *Clearingway) Autocomplete(s *discordgo.Session, i *discordgo.Interactio
 	title := cases.Title(language.AmericanEnglish)
 
 	if len(world) == 0 {
-		for _, world := range c.AllWorlds {
+		// Limit to first 25 worlds when showing all
+		worldsToShow := c.AllWorlds
+		if len(worldsToShow) > 25 {
+			worldsToShow = worldsToShow[:25]
+		}
+		for _, world := range worldsToShow {
 			worldTitle := title.String(world)
 			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
 				Name:  worldTitle,
 				Value: world,
 			})
 		}
-		return
 	} else {
-		for _, worldCompletion := range c.AutoCompleteTrie.SearchAll(world) {
+		// Get matching worlds and limit to 25
+		matchingWorlds := c.AutoCompleteTrie.SearchAll(world)
+		if len(matchingWorlds) > 25 {
+			matchingWorlds = matchingWorlds[:25]
+		}
+		for _, worldCompletion := range matchingWorlds {
 			worldCompletionTitle := title.String(worldCompletion)
 			choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
 				Name:  worldCompletionTitle,

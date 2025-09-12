@@ -45,7 +45,16 @@ func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate
 		return
 	}
 
-	// Retrieve all the options sent to the command
+	// Check if using the correct channel
+	if i.ChannelID != g.ChannelId {
+		fmt.Printf("Ignoring message not in channel %s.\n", g.ChannelId)
+		err := discord.StartInteraction(s, i.Interaction,
+			fmt.Sprintf("Please use this command in <#%s>", g.ChannelId))
+		if err != nil {
+			fmt.Printf("Error sending Discord message: %v\n", err)
+		}
+		return
+	}
 	options := i.ApplicationCommandData().Options
 	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
 	for _, opt := range options {
