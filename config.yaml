@@ -275,12 +275,12 @@ guilds:
   leaderboardEnabled: true
   # Manual message ID overrides (replace with your actual message IDs)
   leaderboardMessageOverrides:
-    "The Unending Coil of Bahamut (Ultimate)": 1416130631653654638
-    "The Weapon's Refrain (Ultimate)": 1416123890412818494
-    "The Epic of Alexander (Ultimate)": 1416123771496042546
-    "Dragonsong's Reprise (Ultimate)": 1416120440199319657
-    "The Omega Protocol (Ultimate)": 1416122129417764884
-    "Futures Rewritten (Ultimate)": 1416122030708883581
+    "The Unending Coil of Bahamut (Ultimate)": "1416130631653654638"
+    "The Weapon's Refrain (Ultimate)": "1416123890412818494"
+    "The Epic of Alexander (Ultimate)": "1416123771496042546"
+    "Dragonsong's Reprise (Ultimate)": "1416120440199319657"
+    "The Omega Protocol (Ultimate)": "1416122129417764884"
+    "Futures Rewritten (Ultimate)": "1416122030708883581"
   encounters:
   - ids: [1079]
     name: "Futures Rewritten (Ultimate)"
