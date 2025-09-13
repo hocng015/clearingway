@@ -215,22 +215,26 @@ func (c *Clearingway) parseLeaderboardFromEmbed(embed *discordgo.MessageEmbed) [
 				characterName := strings.TrimSpace(nameAndWorld[:worldStart])
 				world := strings.TrimSpace(nameAndWorld[worldStart+1 : worldEnd])
 
-				// Find kill count - look for "**X kills**"
-				killsPattern := "**"
-				killsStart := strings.Index(line, killsPattern)
+				// Find kill count - look for "**" followed by numbers
+				killsStart := strings.Index(line, "**")
 				if killsStart == -1 {
-					fmt.Printf("Warning: Could not find kill count in: %s\n", line)
+					fmt.Printf("Warning: Could not find kill count marker in: %s\n", line)
 					continue
 				}
-				killsStart += len(killsPattern)
+				killsStart += 2 // Skip the "**"
 
-				killsEnd := strings.Index(line[killsStart:], " kills**")
-				if killsEnd == -1 {
-					fmt.Printf("Warning: Could not parse kill count from: %s\n", line)
+				// Find the end of the kill count - look for the next "**" or any non-digit character after digits
+				killsEnd := killsStart
+				for killsEnd < len(line) && (line[killsEnd] >= '0' && line[killsEnd] <= '9') {
+					killsEnd++
+				}
+
+				if killsEnd == killsStart {
+					fmt.Printf("Warning: Could not find kill count digits in: %s\n", line)
 					continue
 				}
 
-				killCountStr := line[killsStart : killsStart+killsEnd]
+				killCountStr := line[killsStart:killsEnd]
 				killCount := 0
 				if _, err := fmt.Sscanf(killCountStr, "%d", &killCount); err != nil {
 					fmt.Printf("Warning: Could not convert kill count '%s' to number: %v\n", killCountStr, err)
