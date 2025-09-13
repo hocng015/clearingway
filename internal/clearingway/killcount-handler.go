@@ -506,9 +506,22 @@ func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboar
 		return nil
 	}
 
-	// Build the embed
+	// Map Ultimate names to their totem emojis
+	ultimateEmojis := map[string]string{
+		"The Omega Protocol (Ultimate)":           "<:toptotem:1412804998495997972>",
+		"Dragonsong's Reprise (Ultimate)":         "<:dsrtotem:1412805063595921489>",
+		"The Epic of Alexander (Ultimate)":        "<:teatotem:1412805183909527552>",
+		"Futures Rewritten (Ultimate)":            "<:frutotem:1412805130255863818>",
+		"The Weapon's Refrain (Ultimate)":         "<:uwutotem:1412805291568791752>",
+		"The Unending Coil of Bahamut (Ultimate)": "<:ucobtotem:1412805358518407179>",
+	}
+
+	// Get the emoji for this ultimate, default to empty string if not found
+	emoji := ultimateEmojis[leaderboard.Ultimate]
+
+	// Build the embed with emoji in title
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("🏆 %s Kill Count Leaderboard", leaderboard.Ultimate),
+		Title:       fmt.Sprintf("🏆 %s Kill Count Leaderboard %s", leaderboard.Ultimate, emoji),
 		Description: "Top raiders by total kills",
 		Color:       0x00ff00,
 		Timestamp:   leaderboard.LastUpdated.Format(time.RFC3339),
