@@ -30,6 +30,83 @@ type KillCountLeaderboard struct {
 	Entries     []KillCountEntry
 	LastUpdated time.Time
 	ChannelID   string // Channel to post the leaderboard
+	MessageID   string // Store the message ID directly in the leaderboard
+}
+
+// RestoreLeaderboardMessages scans the leaderboard channel for existing messages
+// and restores the message IDs for each ultimate. Call this on bot startup.
+// It first tries to use manual config overrides, then falls back to automatic detection.
+func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild) error {
+	if g.LeaderboardChannelId == "" {
+		return nil
+	}
+
+	if g.KillCountLeaderboards == nil {
+		return nil
+	}
+
+	// First, apply any manual message ID overrides from config
+	if g.LeaderboardMessageOverrides != nil {
+		for ultimateName, messageID := range g.LeaderboardMessageOverrides {
+			if leaderboard, exists := g.KillCountLeaderboards[ultimateName]; exists {
+				// Validate that the message actually exists and is accessible
+				_, err := s.ChannelMessage(g.LeaderboardChannelId, messageID)
+				if err != nil {
+					fmt.Printf("Warning: Manual override message ID %s for %s is invalid or inaccessible: %v\n", messageID, ultimateName, err)
+					continue
+				}
+				leaderboard.MessageID = messageID
+				fmt.Printf("Applied manual override: message ID %s for ultimate %s\n", messageID, ultimateName)
+			}
+		}
+	}
+
+	// Then, for any leaderboards without message IDs, try automatic detection
+	leaderboardsNeedingIDs := make(map[string]*KillCountLeaderboard)
+	for ultimateName, leaderboard := range g.KillCountLeaderboards {
+		if leaderboard.MessageID == "" {
+			leaderboardsNeedingIDs[ultimateName] = leaderboard
+		}
+	}
+
+	if len(leaderboardsNeedingIDs) == 0 {
+		fmt.Printf("All leaderboards have message IDs (manual or previously detected)\n")
+		return nil
+	}
+
+	fmt.Printf("Attempting automatic detection for %d leaderboards...\n", len(leaderboardsNeedingIDs))
+
+	// Get recent messages from the leaderboard channel for automatic detection
+	messages, err := s.ChannelMessages(g.LeaderboardChannelId, 100, "", "", "")
+	if err != nil {
+		return fmt.Errorf("failed to get channel messages for automatic detection: %w", err)
+	}
+
+	// Look for messages that match leaderboard format
+	for _, msg := range messages {
+		if len(msg.Embeds) > 0 && msg.Author.ID == s.State.User.ID {
+			embed := msg.Embeds[0]
+			// Check each ultimate that still needs a message ID
+			for ultimateName, leaderboard := range leaderboardsNeedingIDs {
+				if strings.Contains(embed.Title, ultimateName) || strings.Contains(embed.Title, leaderboard.Ultimate) {
+					leaderboard.MessageID = msg.ID
+					fmt.Printf("Auto-detected message ID %s for ultimate %s\n", msg.ID, ultimateName)
+					delete(leaderboardsNeedingIDs, ultimateName) // Remove from list
+					break
+				}
+			}
+		}
+	}
+
+	// Report any leaderboards that still don't have message IDs
+	if len(leaderboardsNeedingIDs) > 0 {
+		fmt.Printf("Warning: Could not find existing messages for %d leaderboards:\n", len(leaderboardsNeedingIDs))
+		for ultimateName := range leaderboardsNeedingIDs {
+			fmt.Printf("  - %s (new messages will be created)\n", ultimateName)
+		}
+	}
+
+	return nil
 }
 
 func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -234,6 +311,7 @@ func (c *Clearingway) UpdateKillCountLeaderboard(s *discordgo.Session, g *Guild,
 			Entries:     []KillCountEntry{},
 			LastUpdated: time.Now(),
 			ChannelID:   g.LeaderboardChannelId,
+			MessageID:   "", // Will be set when message is created
 		}
 		g.KillCountLeaderboards[ultimate] = leaderboard
 	}
@@ -317,21 +395,17 @@ func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboar
 	}
 
 	// Check if we should update an existing message or create a new one
-	if g.LeaderboardMessageIds == nil {
-		g.LeaderboardMessageIds = make(map[string]string)
-	}
-
-	messageId, exists := g.LeaderboardMessageIds[leaderboard.Ultimate]
-	if exists && messageId != "" {
+	if leaderboard.MessageID != "" {
 		// Try to edit the existing message
-		_, err := s.ChannelMessageEditEmbed(leaderboard.ChannelID, messageId, embed)
+		_, err := s.ChannelMessageEditEmbed(leaderboard.ChannelID, leaderboard.MessageID, embed)
 		if err != nil {
+			fmt.Printf("Failed to edit existing message (ID: %s), creating new one: %v\n", leaderboard.MessageID, err)
 			// If editing fails, create a new message
 			msg, err := s.ChannelMessageSendEmbed(leaderboard.ChannelID, embed)
 			if err != nil {
 				return fmt.Errorf("Could not post leaderboard: %w", err)
 			}
-			g.LeaderboardMessageIds[leaderboard.Ultimate] = msg.ID
+			leaderboard.MessageID = msg.ID
 		}
 	} else {
 		// Create a new message
@@ -339,7 +413,84 @@ func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboar
 		if err != nil {
 			return fmt.Errorf("Could not post leaderboard: %w", err)
 		}
-		g.LeaderboardMessageIds[leaderboard.Ultimate] = msg.ID
+		leaderboard.MessageID = msg.ID
+	}
+
+	// Remove the old LeaderboardMessageIds if it exists (for migration purposes)
+	if g.LeaderboardMessageIds != nil {
+		delete(g.LeaderboardMessageIds, leaderboard.Ultimate)
+		if len(g.LeaderboardMessageIds) == 0 {
+			g.LeaderboardMessageIds = nil
+		}
+	}
+
+	return nil
+}
+
+// Optional: Add a batch update command for updating multiple characters at once
+func (c *Clearingway) BatchUpdateKillCounts(s *discordgo.Session, g *Guild, ultimate string) error {
+	// This could be used to update all registered characters' kill counts
+	// periodically or on demand
+
+	for characterKey, char := range g.Characters.Characters {
+		_ = characterKey // Use this if needed
+
+		// Find the ultimate encounter
+		var targetEncounter *Encounter
+		for _, e := range UltimateEncounters.Encounters {
+			if e.Name == ultimate {
+				targetEncounter = g.Encounters.ForName(e.Name)
+				break
+			}
+		}
+
+		if targetEncounter == nil {
+			continue
+		}
+
+		killCount, err := c.GetKillCountForUltimate(char, targetEncounter)
+		if err != nil {
+			fmt.Printf("Error getting kill count for %s: %v\n", char.Name(), err)
+			continue
+		}
+
+		// Update the leaderboard entry
+		if g.KillCountLeaderboards == nil {
+			g.KillCountLeaderboards = make(map[string]*KillCountLeaderboard)
+		}
+
+		leaderboard, exists := g.KillCountLeaderboards[ultimate]
+		if !exists {
+			leaderboard = &KillCountLeaderboard{
+				Ultimate:  ultimate,
+				Entries:   []KillCountEntry{},
+				ChannelID: g.LeaderboardChannelId,
+			}
+			g.KillCountLeaderboards[ultimate] = leaderboard
+		}
+
+		// Update or add the entry
+		found := false
+		for i, entry := range leaderboard.Entries {
+			if entry.CharacterName == char.Name() && entry.World == char.World {
+				leaderboard.Entries[i].KillCount = killCount
+				found = true
+				break
+			}
+		}
+
+		if !found && killCount > 0 {
+			leaderboard.Entries = append(leaderboard.Entries, KillCountEntry{
+				CharacterName: char.Name(),
+				World:         char.World,
+				KillCount:     killCount,
+			})
+		}
+	}
+
+	// Post the updated leaderboard
+	if leaderboard, exists := g.KillCountLeaderboards[ultimate]; exists {
+		return c.PostLeaderboard(s, g, leaderboard)
 	}
 
 	return nil

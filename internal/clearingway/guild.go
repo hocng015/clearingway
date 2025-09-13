@@ -34,11 +34,12 @@ type Guild struct {
 	MenuEnabled               bool
 	SkipRemoval               bool
 
-	// ADD THESE NEW FIELDS FOR LEADERBOARD
-	LeaderboardChannelId  string
-	LeaderboardEnabled    bool
-	KillCountLeaderboards map[string]*KillCountLeaderboard
-	LeaderboardMessageIds map[string]string
+	// LEADERBOARD FIELDS
+	LeaderboardChannelId        string
+	LeaderboardEnabled          bool
+	KillCountLeaderboards       map[string]*KillCountLeaderboard
+	LeaderboardMessageIds       map[string]string // Keep for backward compatibility
+	LeaderboardMessageOverrides map[string]string // NEW: Manual message ID overrides
 
 	EncounterRoles          *Roles
 	RelevantParsingRoles    *Roles
@@ -49,7 +50,7 @@ type Guild struct {
 	UltimateRepetitionRoles *Roles
 	DatacenterRoles         *Roles
 	AchievementRoles        *Roles
-	MenuRoles               *Roles // to ensure any additional roles added as part of menu config
+	MenuRoles               *Roles
 }
 
 func (g *Guild) Init(c *ConfigGuild) {
@@ -62,11 +63,12 @@ func (g *Guild) Init(c *ConfigGuild) {
 	g.Menus = &Menus{Menus: map[string]*Menu{}, MenuGroups: map[string][]string{}}
 	g.DefaultMenus()
 
-	// ADD THESE NEW INITIALIZATIONS FOR LEADERBOARD
+	// LEADERBOARD INITIALIZATIONS
 	g.LeaderboardChannelId = c.LeaderboardChannelId
 	g.LeaderboardEnabled = c.LeaderboardEnabled
 	g.KillCountLeaderboards = make(map[string]*KillCountLeaderboard)
 	g.LeaderboardMessageIds = make(map[string]string)
+	g.LeaderboardMessageOverrides = c.LeaderboardMessageOverrides // ADD THIS LINE
 
 	g.PhysicalDatacenters = &PhysicalDatacenters{PhysicalDatacenters: map[string]*PhysicalDatacenter{}}
 	fmt.Printf("Datacenters are %+v\n", c.ConfigPhysicalDatacenters)

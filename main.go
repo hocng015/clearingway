@@ -121,6 +121,23 @@ func start(c *clearingway.Clearingway) {
 		fmt.Printf("Waiting for Clearingway to be ready...\n")
 		time.Sleep(2 * time.Second)
 	}
+
+	// NEW: Restore leaderboard message IDs after bot is ready
+	fmt.Printf("Restoring leaderboard message IDs...\n")
+	for guildId, guild := range c.Guilds.Guilds {
+		if guild.LeaderboardEnabled && guild.LeaderboardChannelId != "" {
+			err := c.RestoreLeaderboardMessages(c.Discord.Session, guild)
+			if err != nil {
+				fmt.Printf("Error restoring leaderboard messages for guild %s (%s): %v\n",
+					guild.Name, guildId, err)
+			} else {
+				fmt.Printf("Successfully processed leaderboard message restoration for guild %s\n",
+					guild.Name)
+			}
+		}
+	}
+	fmt.Printf("Leaderboard message restoration complete.\n")
+
 	c.Discord.Session.AddHandler(c.InteractionCreate)
 
 	sc := make(chan os.Signal, 1)

@@ -5,18 +5,19 @@ type Config struct {
 }
 
 type ConfigGuild struct {
-	Name                      string                      `yaml:"name"`
-	GuildId                   string                      `yaml:"guildId"`
-	ChannelId                 string                      `yaml:"channelId"`
-	LeaderboardChannelId      string                      `yaml:"leaderboardChannelId"` // ADD THIS
-	LeaderboardEnabled        bool                        `yaml:"leaderboardEnabled"`   // ADD THIS
-	ConfigPhysicalDatacenters []*ConfigPhysicalDatacenter `yaml:"physicalDatacenters"`
-	ConfigEncounters          []*ConfigEncounter          `yaml:"encounters"`
-	ConfigAchievements        []*ConfigAchievement        `yaml:"achievements"`
-	ConfigRoles               *ConfigRoles                `yaml:"roles"`
-	ConfigReconfigureRoles    []*ConfigReconfigureRoles   `yaml:"reconfigureRoles"`
-	ConfigMenus               []*ConfigMenu               `yaml:"menu"`
-	ConfigMenuOrder           []ConfigMenuOrder           `yaml:"menuOrder"`
+	Name                        string                      `yaml:"name"`
+	GuildId                     string                      `yaml:"guildId"`
+	ChannelId                   string                      `yaml:"channelId"`
+	LeaderboardChannelId        string                      `yaml:"leaderboardChannelId"`
+	LeaderboardEnabled          bool                        `yaml:"leaderboardEnabled"`
+	LeaderboardMessageOverrides map[string]string           `yaml:"leaderboardMessageOverrides,omitempty"` // NEW
+	ConfigPhysicalDatacenters   []*ConfigPhysicalDatacenter `yaml:"physicalDatacenters"`
+	ConfigEncounters            []*ConfigEncounter          `yaml:"encounters"`
+	ConfigAchievements          []*ConfigAchievement        `yaml:"achievements"`
+	ConfigRoles                 *ConfigRoles                `yaml:"roles"`
+	ConfigReconfigureRoles      []*ConfigReconfigureRoles   `yaml:"reconfigureRoles"`
+	ConfigMenus                 []*ConfigMenu               `yaml:"menu"`
+	ConfigMenuOrder             []ConfigMenuOrder           `yaml:"menuOrder"`
 }
 
 type ConfigRoles struct {
