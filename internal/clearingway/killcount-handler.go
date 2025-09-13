@@ -70,8 +70,7 @@ func (c *Clearingway) InitializeEmptyLeaderboards(g *Guild) {
 }
 
 // RestoreLeaderboardMessages scans the leaderboard channel for existing messages
-// and restores the message IDs for each ultimate. Call this on bot startup.
-// It first tries to use manual config overrides, then falls back to automatic detection.
+// and restores both the message IDs and the actual leaderboard data for each ultimate.
 func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild) error {
 	if g.LeaderboardChannelId == "" {
 		fmt.Printf("DEBUG: No leaderboard channel ID configured\n")
@@ -93,13 +92,26 @@ func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild)
 		for ultimateName, messageID := range g.LeaderboardMessageOverrides {
 			if leaderboard, exists := g.KillCountLeaderboards[ultimateName]; exists {
 				// Validate that the message actually exists and is accessible
-				_, err := s.ChannelMessage(g.LeaderboardChannelId, messageID)
+				msg, err := s.ChannelMessage(g.LeaderboardChannelId, messageID)
 				if err != nil {
 					fmt.Printf("Warning: Manual override message ID %s for %s is invalid or inaccessible: %v\n", messageID, ultimateName, err)
 					continue
 				}
 				leaderboard.MessageID = messageID
-				fmt.Printf("Applied manual override: message ID %s for ultimate %s\n", messageID, ultimateName)
+
+				// Parse existing message content to restore leaderboard data
+				if len(msg.Embeds) > 0 {
+					parsedEntries := c.parseLeaderboardFromEmbed(msg.Embeds[0])
+					if len(parsedEntries) > 0 {
+						leaderboard.Entries = parsedEntries
+						leaderboard.LastUpdated = time.Now()
+						fmt.Printf("Applied manual override: message ID %s for %s with %d entries\n",
+							messageID, ultimateName, len(parsedEntries))
+					} else {
+						fmt.Printf("Applied manual override: message ID %s for %s (no entries found)\n",
+							messageID, ultimateName)
+					}
+				}
 			}
 		}
 	}
@@ -133,7 +145,19 @@ func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild)
 			for ultimateName, leaderboard := range leaderboardsNeedingIDs {
 				if strings.Contains(embed.Title, ultimateName) || strings.Contains(embed.Title, leaderboard.Ultimate) {
 					leaderboard.MessageID = msg.ID
-					fmt.Printf("Auto-detected message ID %s for ultimate %s\n", msg.ID, ultimateName)
+
+					// Parse existing message content to restore leaderboard data
+					parsedEntries := c.parseLeaderboardFromEmbed(embed)
+					if len(parsedEntries) > 0 {
+						leaderboard.Entries = parsedEntries
+						leaderboard.LastUpdated = time.Now()
+						fmt.Printf("Auto-detected message ID %s for %s with %d entries\n",
+							msg.ID, ultimateName, len(parsedEntries))
+					} else {
+						fmt.Printf("Auto-detected message ID %s for %s (no entries found)\n",
+							msg.ID, ultimateName)
+					}
+
 					delete(leaderboardsNeedingIDs, ultimateName) // Remove from list
 					break
 				}
@@ -150,6 +174,85 @@ func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild)
 	}
 
 	return nil
+}
+
+// parseLeaderboardFromEmbed extracts leaderboard entries from an existing Discord embed
+func (c *Clearingway) parseLeaderboardFromEmbed(embed *discordgo.MessageEmbed) []KillCountEntry {
+	var entries []KillCountEntry
+
+	// Look for the "Rankings" field
+	for _, field := range embed.Fields {
+		if field.Name == "Rankings" {
+			lines := strings.Split(field.Value, "\n")
+
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line == "" {
+					continue
+				}
+
+				// Parse lines like: "🥇 `Dank' Tank (Gilgamesh)` - **272 kills**"
+				// or "#4 `Liokki Rhew-Gilda (Cactuar)` - **39 kills**"
+
+				// Find the part between backticks (character name and world)
+				start := strings.Index(line, "`")
+				end := strings.LastIndex(line, "`")
+				if start == -1 || end == -1 || start >= end {
+					fmt.Printf("Warning: Could not parse leaderboard line: %s\n", line)
+					continue
+				}
+
+				nameAndWorld := line[start+1 : end]
+
+				// Split character name and world - world is in parentheses at the end
+				worldStart := strings.LastIndex(nameAndWorld, "(")
+				worldEnd := strings.LastIndex(nameAndWorld, ")")
+				if worldStart == -1 || worldEnd == -1 || worldStart >= worldEnd {
+					fmt.Printf("Warning: Could not parse character and world from: %s\n", nameAndWorld)
+					continue
+				}
+
+				characterName := strings.TrimSpace(nameAndWorld[:worldStart])
+				world := strings.TrimSpace(nameAndWorld[worldStart+1 : worldEnd])
+
+				// Find kill count - look for "**X kills**"
+				killsPattern := "**"
+				killsStart := strings.Index(line, killsPattern)
+				if killsStart == -1 {
+					fmt.Printf("Warning: Could not find kill count in: %s\n", line)
+					continue
+				}
+				killsStart += len(killsPattern)
+
+				killsEnd := strings.Index(line[killsStart:], " kills**")
+				if killsEnd == -1 {
+					fmt.Printf("Warning: Could not parse kill count from: %s\n", line)
+					continue
+				}
+
+				killCountStr := line[killsStart : killsStart+killsEnd]
+				killCount := 0
+				if _, err := fmt.Sscanf(killCountStr, "%d", &killCount); err != nil {
+					fmt.Printf("Warning: Could not convert kill count '%s' to number: %v\n", killCountStr, err)
+					continue
+				}
+
+				// Create the entry
+				entry := KillCountEntry{
+					CharacterName: characterName,
+					World:         world,
+					KillCount:     killCount,
+					LastUpdate:    time.Now(), // Set as restored
+				}
+
+				entries = append(entries, entry)
+				fmt.Printf("Parsed entry: %s (%s) - %d kills\n", characterName, world, killCount)
+			}
+			break // Found the Rankings field, no need to check other fields
+		}
+	}
+
+	return entries
 }
 
 func (c *Clearingway) Count(s *discordgo.Session, i *discordgo.InteractionCreate) {
