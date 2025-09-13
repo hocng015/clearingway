@@ -519,9 +519,9 @@ func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboar
 	// Get the emoji for this ultimate, default to empty string if not found
 	emoji := ultimateEmojis[leaderboard.Ultimate]
 
-	// Build the embed with emoji in title
+	// Build the embed with emoji at beginning and end of title
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("🏆 %s Kill Count Leaderboard %s", leaderboard.Ultimate, emoji),
+		Title:       fmt.Sprintf("%s 🏆 %s Kill Count Leaderboard %s", emoji, leaderboard.Ultimate, emoji),
 		Description: "Top raiders by total kills",
 		Color:       0x00ff00,
 		Timestamp:   leaderboard.LastUpdated.Format(time.RFC3339),
