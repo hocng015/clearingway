@@ -2,6 +2,7 @@ package clearingway
 
 import (
 	"fmt"
+	"regexp" // Add this
 	"sort"
 	"strings"
 	"time"
@@ -192,13 +193,13 @@ func (c *Clearingway) parseLeaderboardFromEmbed(embed *discordgo.MessageEmbed) [
 				}
 
 				// Parse lines like: "🥇 `Dank' Tank (Gilgamesh)` - **272 kills**"
-				// or "#4 `Liokki Rhew-Gilda (Cactuar)` - **39 kills**"
+				// Use a more flexible approach - look for the pattern: `NAME (WORLD)` - **NUMBER kills**
 
-				// Find the part between backticks (character name and world)
+				// Find character name and world between backticks
 				start := strings.Index(line, "`")
 				end := strings.LastIndex(line, "`")
 				if start == -1 || end == -1 || start >= end {
-					fmt.Printf("Warning: Could not parse leaderboard line: %s\n", line)
+					fmt.Printf("Warning: Could not find backticks in line: %s\n", line)
 					continue
 				}
 
@@ -215,27 +216,29 @@ func (c *Clearingway) parseLeaderboardFromEmbed(embed *discordgo.MessageEmbed) [
 				characterName := strings.TrimSpace(nameAndWorld[:worldStart])
 				world := strings.TrimSpace(nameAndWorld[worldStart+1 : worldEnd])
 
-				// Find kill count - look for the LAST occurrence of "**" followed by numbers
-				// This avoids the ranking markers like **#4** and finds the actual kill count
-				lastBoldStart := strings.LastIndex(line, "**")
-				if lastBoldStart == -1 {
-					fmt.Printf("Warning: Could not find kill count marker in: %s\n", line)
+				// Look for kill count using regex pattern
+				// This handles both "**272 kills**" and "**272" patterns
+				killCountRegex := `\*\*(\d+)(?:\s*kills)?\*\*`
+				re, err := regexp.Compile(killCountRegex)
+				if err != nil {
+					fmt.Printf("Error compiling regex: %v\n", err)
 					continue
 				}
 
-				// Look backwards from the last ** to find the start of the number
-				killsStart := lastBoldStart - 1
-				for killsStart >= 0 && (line[killsStart] >= '0' && line[killsStart] <= '9') {
-					killsStart--
-				}
-				killsStart++ // Move forward to the first digit
-
-				if killsStart >= lastBoldStart {
-					fmt.Printf("Warning: Could not find kill count digits in: %s\n", line)
+				matches := re.FindAllStringSubmatch(line, -1)
+				if len(matches) == 0 {
+					fmt.Printf("Warning: Could not find kill count in line: %s\n", line)
 					continue
 				}
 
-				killCountStr := line[killsStart:lastBoldStart]
+				// Take the last match (in case there are multiple ** patterns)
+				lastMatch := matches[len(matches)-1]
+				if len(lastMatch) < 2 {
+					fmt.Printf("Warning: Regex match but no capture group in: %s\n", line)
+					continue
+				}
+
+				killCountStr := lastMatch[1]
 				killCount := 0
 				if _, err := fmt.Sscanf(killCountStr, "%d", &killCount); err != nil {
 					fmt.Printf("Warning: Could not convert kill count '%s' to number: %v\n", killCountStr, err)
@@ -247,7 +250,7 @@ func (c *Clearingway) parseLeaderboardFromEmbed(embed *discordgo.MessageEmbed) [
 					CharacterName: characterName,
 					World:         world,
 					KillCount:     killCount,
-					LastUpdate:    time.Now(), // Set as restored
+					LastUpdate:    time.Now(),
 				}
 
 				entries = append(entries, entry)
