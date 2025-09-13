@@ -33,6 +33,42 @@ type KillCountLeaderboard struct {
 	MessageID   string // Store the message ID directly in the leaderboard
 }
 
+// InitializeEmptyLeaderboards creates empty leaderboard objects for all Ultimates
+// so that message IDs can be restored to them on startup
+func (c *Clearingway) InitializeEmptyLeaderboards(g *Guild) {
+	if !g.LeaderboardEnabled || g.LeaderboardChannelId == "" {
+		return
+	}
+
+	if g.KillCountLeaderboards == nil {
+		g.KillCountLeaderboards = make(map[string]*KillCountLeaderboard)
+	}
+
+	// Create empty leaderboards for all Ultimate encounters
+	ultimateNames := []string{
+		"The Unending Coil of Bahamut (Ultimate)",
+		"The Weapon's Refrain (Ultimate)",
+		"The Epic of Alexander (Ultimate)",
+		"Dragonsong's Reprise (Ultimate)",
+		"The Omega Protocol (Ultimate)",
+		"Futures Rewritten (Ultimate)",
+	}
+
+	for _, ultimateName := range ultimateNames {
+		if _, exists := g.KillCountLeaderboards[ultimateName]; !exists {
+			g.KillCountLeaderboards[ultimateName] = &KillCountLeaderboard{
+				Ultimate:    ultimateName,
+				Entries:     []KillCountEntry{},
+				LastUpdated: time.Now(),
+				ChannelID:   g.LeaderboardChannelId,
+				MessageID:   "", // Will be restored by RestoreLeaderboardMessages
+			}
+		}
+	}
+
+	fmt.Printf("Initialized %d empty leaderboards for guild %s\n", len(ultimateNames), g.Name)
+}
+
 // RestoreLeaderboardMessages scans the leaderboard channel for existing messages
 // and restores the message IDs for each ultimate. Call this on bot startup.
 // It first tries to use manual config overrides, then falls back to automatic detection.

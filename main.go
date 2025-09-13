@@ -122,7 +122,17 @@ func start(c *clearingway.Clearingway) {
 		time.Sleep(2 * time.Second)
 	}
 
-	// NEW: Restore leaderboard message IDs after bot is ready
+	// NEW: Initialize empty leaderboards first
+	fmt.Printf("Initializing leaderboards...\n")
+	for guildId, guild := range c.Guilds.Guilds {
+		if guild.LeaderboardEnabled && guild.LeaderboardChannelId != "" {
+			c.InitializeEmptyLeaderboards(guild)
+			fmt.Printf("Initialized leaderboards for guild %s (%s)\n", guild.Name, guildId)
+		}
+	}
+	fmt.Printf("Leaderboard initialization complete.\n")
+
+	// THEN restore message IDs after leaderboards exist
 	fmt.Printf("Restoring leaderboard message IDs...\n")
 	for guildId, guild := range c.Guilds.Guilds {
 		if guild.LeaderboardEnabled && guild.LeaderboardChannelId != "" {
