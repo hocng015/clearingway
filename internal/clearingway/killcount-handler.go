@@ -38,11 +38,18 @@ type KillCountLeaderboard struct {
 // It first tries to use manual config overrides, then falls back to automatic detection.
 func (c *Clearingway) RestoreLeaderboardMessages(s *discordgo.Session, g *Guild) error {
 	if g.LeaderboardChannelId == "" {
+		fmt.Printf("DEBUG: No leaderboard channel ID configured\n")
 		return nil
 	}
 
 	if g.KillCountLeaderboards == nil {
+		fmt.Printf("DEBUG: KillCountLeaderboards is nil\n")
 		return nil
+	}
+
+	fmt.Printf("DEBUG: Found %d existing leaderboards to restore\n", len(g.KillCountLeaderboards))
+	for name, lb := range g.KillCountLeaderboards {
+		fmt.Printf("DEBUG: Leaderboard '%s' has MessageID '%s'\n", name, lb.MessageID)
 	}
 
 	// First, apply any manual message ID overrides from config
@@ -349,11 +356,10 @@ func (c *Clearingway) UpdateKillCountLeaderboard(s *discordgo.Session, g *Guild,
 
 func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboard *KillCountLeaderboard) error {
 	if leaderboard.ChannelID == "" {
-		// If no leaderboard channel is configured, skip posting
 		return nil
 	}
 
-	// Build the leaderboard message
+	// Build the embed
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("🏆 %s Kill Count Leaderboard", leaderboard.Ultimate),
 		Description: "Top raiders by total kills",
@@ -394,34 +400,47 @@ func (c *Clearingway) PostLeaderboard(s *discordgo.Session, g *Guild, leaderboar
 		})
 	}
 
-	// Check if we should update an existing message or create a new one
+	// Initialize LeaderboardMessageIds if it doesn't exist
+	if g.LeaderboardMessageIds == nil {
+		g.LeaderboardMessageIds = make(map[string]string)
+	}
+
+	messageId := ""
+
+	// Try the new MessageID field first
 	if leaderboard.MessageID != "" {
-		// Try to edit the existing message
-		_, err := s.ChannelMessageEditEmbed(leaderboard.ChannelID, leaderboard.MessageID, embed)
+		messageId = leaderboard.MessageID
+	} else if g.LeaderboardMessageIds[leaderboard.Ultimate] != "" {
+		// Fall back to old system
+		messageId = g.LeaderboardMessageIds[leaderboard.Ultimate]
+		leaderboard.MessageID = messageId // Migrate to new system
+	}
+
+	if messageId != "" {
+		// Try to edit existing message
+		_, err := s.ChannelMessageEditEmbed(leaderboard.ChannelID, messageId, embed)
 		if err != nil {
-			fmt.Printf("Failed to edit existing message (ID: %s), creating new one: %v\n", leaderboard.MessageID, err)
-			// If editing fails, create a new message
+			fmt.Printf("Failed to edit message ID %s for %s: %v\n", messageId, leaderboard.Ultimate, err)
+			// Create new message if edit fails
 			msg, err := s.ChannelMessageSendEmbed(leaderboard.ChannelID, embed)
 			if err != nil {
 				return fmt.Errorf("Could not post leaderboard: %w", err)
 			}
 			leaderboard.MessageID = msg.ID
+			g.LeaderboardMessageIds[leaderboard.Ultimate] = msg.ID
+			fmt.Printf("Created new message ID %s for %s\n", msg.ID, leaderboard.Ultimate)
+		} else {
+			fmt.Printf("Successfully updated existing message ID %s for %s\n", messageId, leaderboard.Ultimate)
 		}
 	} else {
-		// Create a new message
+		// Create new message
 		msg, err := s.ChannelMessageSendEmbed(leaderboard.ChannelID, embed)
 		if err != nil {
 			return fmt.Errorf("Could not post leaderboard: %w", err)
 		}
 		leaderboard.MessageID = msg.ID
-	}
-
-	// Remove the old LeaderboardMessageIds if it exists (for migration purposes)
-	if g.LeaderboardMessageIds != nil {
-		delete(g.LeaderboardMessageIds, leaderboard.Ultimate)
-		if len(g.LeaderboardMessageIds) == 0 {
-			g.LeaderboardMessageIds = nil
-		}
+		g.LeaderboardMessageIds[leaderboard.Ultimate] = msg.ID
+		fmt.Printf("Created first message ID %s for %s\n", msg.ID, leaderboard.Ultimate)
 	}
 
 	return nil
